@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-09",
+  "environment": {
+    "jupyterlite_core": "0.8.7",
+    "jupyterlite_pyodide_kernel": "0.8.7",
+    "jupyterlab": "4.6.6",
+    "pyodide": "0.29.4",
+    "python": "3.13.2",
+    "rdkit": "2026.03.6",
+    "py3dmol": "2.5.2"
+  },
+  "checks": {
+    "notebook_schema": "PASS",
+    "notebook_code_cells": 45,
+    "browser_code_execution_errors": 0,
+    "maltose_formula": "C12H22O11",
+    "maltose_molecular_weight": 342.297,
+    "svg_drawing": "PASS",
+    "maltose_3d_embedding_status": 0,
+    "maltose_uff_optimization_status": 0,
+    "changed_smiles_ethanol_and_water": "PASS",
+    "browser": "Chromium 153 headless; WebGL enabled with SwiftShader",
+    "browser_svg_and_maltose_3d_display": "PASS",
+    "browser_3d_canvas_count": 2,
+    "flat_upload_site_build": "PASS"
+  },
+  "limitations": [
+    "Experimental third-party Pyodide RDKit build, not an official PyPI WebAssembly release.",
+    "Cairo PNG rendering is unavailable; use SVG.",
+    "School network and student devices have not been tested.",
+    "GitHub Pages publication was not performed."
+  ],
+  "packaging": "Flat files; workflow copies notebook/data to content/ and wheels to pypi/ before building."
+}

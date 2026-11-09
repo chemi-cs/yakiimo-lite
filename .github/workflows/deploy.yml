@@ -1,0 +1,96 @@
+name: Build and deploy JupyterLite
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Recover and preserve the verified RDKit wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          wheel="pypi/rdkit-2026.3.6-cp313-cp313-pyemscripten_2025_0_wasm32.whl"
+          if [ ! -f "$wheel" ]; then
+            test "$GITHUB_REF" = "refs/heads/main"
+            python - <<'PY'
+          import hashlib
+          import io
+          from pathlib import Path, PurePosixPath
+          import urllib.request
+          import zipfile
+
+          name = "rdkit-2026.3.6-cp313-cp313-pyemscripten_2025_0_wasm32.whl"
+          url = "https://nightly.link/fxcoudert/rdkit-pypi/actions/runs/34453672496/cp313-pyodide_wasm32-0.zip"
+          with urllib.request.urlopen(url, timeout=60) as response:
+              archive_bytes = response.read()
+          if hashlib.sha256(archive_bytes).hexdigest() != "62338845062e4eef2ee4752dc98d433735f1f53a0f6c6548d1cc6d93fd5effa9":
+              raise SystemExit("RDKit source archive SHA-256 mismatch")
+          with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
+              members = [entry for entry in archive.infolist()
+                         if not entry.is_dir() and PurePosixPath(entry.filename).name == name]
+              if len(members) != 1:
+                  raise SystemExit("Expected exactly one matching RDKit wheel")
+              wheel_bytes = archive.read(members[0])
+          if hashlib.sha256(wheel_bytes).hexdigest() != "502080ad307325b03a83d9d5d10ef5d44dfa4bb45d55fcab6fc3bc68246e38db":
+              raise SystemExit("RDKit wheel SHA-256 mismatch")
+          target = Path("pypi") / name
+          target.parent.mkdir(parents=True, exist_ok=True)
+          target.write_bytes(wheel_bytes)
+          PY
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -- "$wheel"
+            git commit -m "Preserve verified RDKit WebAssembly wheel"
+            git push origin HEAD:main
+          fi
+          echo "502080ad307325b03a83d9d5d10ef5d44dfa4bb45d55fcab6fc3bc68246e38db  $wheel" | sha256sum --check --strict
+
+      - name: Install the website build dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Build JupyterLite
+        run: |
+          jupyter lite build
+          touch dist/.nojekyll
+
+      - name: Upload the Pages site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
