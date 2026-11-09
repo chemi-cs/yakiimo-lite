@@ -17,7 +17,7 @@
 | 配置するファイル・フォルダー | 役割 |
 | --- | --- |
 | `.github/workflows/deploy.yml` | GitHub Actionsでサイトを作り、Pagesへ公開 |
-| `jupyter-lite.json` | ブラウザ内のPythonをPyodide 0.29.4に固定 |
+| `jupyter-lite.json` | Pyodide 0.29.4とPythonカーネルの自動起動を設定 |
 | `jupyter_lite_config.json` | 教材の場所とサイトの出力先を指定 |
 | `requirements.txt` | サイトを作るためのJupyterLiteなどを指定 |
 | `content/yakiimo_python_junior.ipynb` | 授業用Notebook |
@@ -48,7 +48,7 @@ https://YOUR_GITHUB_USERNAME.github.io/yakiimo-lite/lab/index.html
 
 ## 授業で実行する
 
-- Pythonカーネルを選択し、上から順にセルを実行します。通常は`Shift + Enter`で次へ進めます。
+- Notebookを開くと、`Python (Pyodide)`カーネルが自動で選択・起動します。初回は読み込みに時間がかかります。`Python (Pyodide)`の表示に切り替わったら、上から順にセルを実行します。通常は`Shift + Enter`で次へ進めます。
 - 化学パートは、最初の準備セルを1回実行してから2D・3Dのセルへ進みます。初回の読み込みは時間がかかることがあります。
 - 2D表示ではSVGを使います。同梱RDKitはCairoによるPNG描画に対応していないため、`Draw.MolToImage()`は使用できません。
 - Pico用の温度制御コードは読む資料です。ブラウザから実機のヒーターを制御する機能はありません。
